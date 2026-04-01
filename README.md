@@ -15,7 +15,7 @@ L'application est disponible sur **http://localhost** après environ 2-4 minutes
 
 ## Architecture 
 
-Shcéma disponible "archi.png"
+Shcéma disponible "Architecture.png"
 
 
 ### Flux d'un upload
@@ -80,9 +80,15 @@ J'ai surtout utilisé Claude AI pour m'aider dans ce projet, mais j'ai égalemen
 
 ## Pistes d'amélioration
 
+### Interface
+- Application mobile
+- Choix d'un mode sombre ou non
+- Changement de la langue
+
 ### Sécurité
 - Authentification 
 - Chiffrement des fichiers
+- Protection contre les attaques de type DDOS en bloquant l'ip après un trop grand nombre d'uploads
 
 ### Performance
 - Message broker comme Kafka pour éliminer le risque de double-scan et améliorer la réactivité
