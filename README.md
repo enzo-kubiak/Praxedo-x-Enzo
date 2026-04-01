@@ -11,14 +11,6 @@ docker compose up --build
 
 L'application est disponible sur **http://localhost** après environ 2-4 minutes (le temps que ClamAV charge ses signatures).
 
-| Service         | URL                        |
-|-----------------|----------------------------|
-| Interface React | http://localhost           |
-| API REST        | http://localhost/api       |
-| MinIO Console   | http://localhost:9001      |
-| Backend #1      | http://localhost:8080      |
-| Backend #2      | http://localhost:8081      |
-
 ---
 
 ## Architecture 
@@ -31,7 +23,7 @@ Shcéma disponible "archi.png"
 1. Le client envoie `POST /api/files/upload` (multipart)
 2. Spring Boot stocke le fichier dans MinIO et crée une entrée en base avec le statut `PENDING`
 3. Un scheduler (`@Scheduled`, toutes les 10s) détecte les fichiers `PENDING`
-4. Le fichier est téléchargé depuis MinIO et envoyé à ClamAV REST (`POST /scan`)
+4. Le fichier est téléchargé depuis MinIO et envoyé à ClamAV sur un service scanner similaire à une API (`POST /scan`)
 5. Le résultat est enregistré en base : `CLEAN` ou `INFECTED`
 6. Si infecté : le fichier est supprimé de MinIO
 7. Le frontend auto-rafraîchit la liste jusqu'à ce qu'il n'y ait plus de fichiers en attente
@@ -39,31 +31,10 @@ Shcéma disponible "archi.png"
 
 ---
 
-## API REST
-
-### `POST /api/files/upload`
-Envoie un fichier (nom, type, taille, scanstatus par l'antivirus -> téléchargeable ou non, date d'upload).
-
-
-### `GET /api/files`
-Liste tous les fichiers.
-
-### `GET /api/files/{id}`
-Détails d'un fichier.
-
-### `GET /api/files/{id}/download`
-Télécharge un fichier. Retourne `403` si le statut n'est pas `CLEAN`.
-
-### `POST /api/contact`
-Soumet un formulaire de contact retourné dans les logs.
-
----
-
 ## Choix techniques
 
 ### ClamAV (antivirus)
 Solution open source, dockerisable, sans clé API externe.
-Déjà utilisé lors d'un projet scolaire.
 Image clamav/clamav intégrée dans le service Scanner (les autres images API de clamav n'étaient plus disponibles sur Docker Hub). 
 
 ### MinIO (stockage)
