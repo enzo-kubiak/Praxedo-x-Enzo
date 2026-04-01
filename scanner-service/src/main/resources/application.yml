@@ -1,0 +1,26 @@
+server:
+  port: ${SERVER_PORT:8090}
+
+spring:
+  application:
+    name: scanner-service
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+clamav:
+  host: ${CLAMAV_HOST:localhost}
+  port: ${CLAMAV_PORT:3310}
+  timeout-seconds: ${CLAMAV_TIMEOUT:60}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.praxedo.scanner: DEBUG

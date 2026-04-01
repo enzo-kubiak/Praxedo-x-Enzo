@@ -1,0 +1,92 @@
+/* ── Reset & base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d0f12;
+  --bg2:       #13161b;
+  --bg3:       #1a1e26;
+  --border:    #252930;
+  --border2:   #2f3440;
+  --text:      #e8eaf0;
+  --text2:     #8b909e;
+  --text3:     #555c6b;
+  --accent:    #4f7cff;
+  --accent2:   #7b9fff;
+  --pending:   #f0a834;
+  --infected:  #e8445a;
+  --clean:     #34c68e;
+  --scanning:  #7b9fff;
+  --radius:    10px;
+  --radius-lg: 16px;
+  --font:      'DM Sans', sans-serif;
+  --font-head: 'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --transition: 160ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+input, textarea { font-family: inherit; }
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── Utility classes ─────────────────────────────────────── */
+.mono { font-family: var(--font-mono); }
+
+/* ── Status badges ───────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.badge-pending  { background: rgba(240,168,52,0.12);  color: var(--pending);  border: 1px solid rgba(240,168,52,0.25); }
+.badge-scanning { background: rgba(123,159,255,0.12); color: var(--scanning); border: 1px solid rgba(123,159,255,0.25); }
+.badge-clean    { background: rgba(52,198,142,0.12);  color: var(--clean);    border: 1px solid rgba(52,198,142,0.25); }
+.badge-infected { background: rgba(232,68,90,0.12);   color: var(--infected); border: 1px solid rgba(232,68,90,0.25); }
+
+/* ── Pulse animation for PENDING/SCANNING ────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+.pulse { animation: pulse-dot 1.4s ease-in-out infinite; }
+
+/* ── Page fade-in ────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.35s ease forwards; }
+
+/* ── Stagger children ────────────────────────────────────── */
+.stagger > * { animation: fade-up 0.35s ease forwards; opacity: 0; }
+.stagger > *:nth-child(1)  { animation-delay: 0.04s; }
+.stagger > *:nth-child(2)  { animation-delay: 0.08s; }
+.stagger > *:nth-child(3)  { animation-delay: 0.12s; }
+.stagger > *:nth-child(4)  { animation-delay: 0.16s; }
+.stagger > *:nth-child(5)  { animation-delay: 0.20s; }
+.stagger > *:nth-child(6)  { animation-delay: 0.24s; }
+.stagger > *:nth-child(7)  { animation-delay: 0.28s; }
+.stagger > *:nth-child(8)  { animation-delay: 0.32s; }
+.stagger > *:nth-child(n+9){ animation-delay: 0.36s; }
