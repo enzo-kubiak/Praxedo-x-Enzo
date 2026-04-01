@@ -53,17 +53,21 @@ Auto-refresh : Le `useFiles` rafraîchit la liste de fichiers toutes les 5s tant
 
 ### SonarQube
 Utilisé en extension dans VS Code pour tester la qualité de code.
-Je m'en suis déjà servi pour tout types de projets (Personnels, scolaires ou professionnels)
+
+Je m'en suis déjà servi pour tout types de projets (Personnels, scolaires ou professionnels).
 
 ### Github 
-Utilisé pour rendre le projet disponible à l'équipe de recrutement
-Je m'en suis déjà servi pour tout types de projets (Personnels, scolaires ou professionnels)
+Utilisé pour rendre le projet disponible à l'équipe de recrutement.
+
+Je m'en suis déjà servi pour tout types de projets (Personnels, scolaires ou professionnels).
 
 ### Autres choix
 Le scan asynchrone sépare le temps de l'upload du temps du scan (pour les gros fichiers par exemple).
 Statut `SCANNING` : Introduit pour éviter que la deuxième instance Spring Boot reprenne un fichier déjà en cours de scan.
-Le téléchargement est refusé (`403 Forbidden`) si le statut n'est pas exactement `CLEAN`. Cette vérification est faite côté serveur, pas seulement côté frontend.
+Le téléchargement est refusé (`403 Forbidden`) si le statut n'est pas exactement `CLEAN`.
+LucidChart utilisé pour le schéma d'architecture.
 J'ai surtout utilisé Claude AI pour m'aider dans ce projet, mais j'ai également utilisé Gemini, ChatGPT et des recherches internet pour aprendre à utiliser React, vérifier certains choix et debugger certaines erreurs.
+
 
 ---
 
