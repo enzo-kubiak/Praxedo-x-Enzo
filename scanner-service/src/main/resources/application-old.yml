@@ -15,18 +15,11 @@ clamav:
   port: ${CLAMAV_PORT:3310}
   timeout-seconds: ${CLAMAV_TIMEOUT:60}
 
-# ── Actuator + Prometheus metrics ──────────────
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus,metrics
-  endpoint:
-    prometheus:
-      enabled: true
-  metrics:
-    tags:
-      service: scanner-service
+        include: health,info
 
 logging:
   level:

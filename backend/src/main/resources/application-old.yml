@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: file-service
+    name: secure-files-service
 
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:securefiles}
@@ -21,6 +21,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
 
   servlet:
     multipart:
@@ -28,34 +29,30 @@ spring:
       max-file-size: 500MB
       max-request-size: 500MB
 
+# MinIO / S3 Configuration
 minio:
   endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
   access-key: ${MINIO_ACCESS_KEY:minioadmin}
   secret-key: ${MINIO_SECRET_KEY:minioadmin}
   bucket: ${MINIO_BUCKET:secure-files}
 
+# scanner-service REST API
 scanner:
   url: ${SCANNER_URL:http://localhost:8090}
 
+# Scan scheduler (every 10 seconds)
 scan:
   scheduler:
     fixed-rate-ms: 10000
 
-# ── Actuator + Prometheus metrics ──────────────
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus,metrics
+        include: health,info
   endpoint:
     health:
       show-details: always
-    prometheus:
-      enabled: true
-  metrics:
-    tags:
-      service: file-service
-      instance: ${SERVER_PORT:8080}
 
 logging:
   level:

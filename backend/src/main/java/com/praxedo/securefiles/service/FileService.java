@@ -3,6 +3,7 @@ package com.praxedo.securefiles.service;
 import com.praxedo.securefiles.dto.FileMetadataDto;
 import com.praxedo.securefiles.model.FileMetadata;
 import com.praxedo.securefiles.repository.FileMetadataRepository;
+import io.micrometer.core.instrument.Counter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,19 +25,13 @@ public class FileService {
     private final FileMetadataRepository repository;
     private final StorageService storageService;
     private final AntivirusService antivirusService;
+    private final Counter infectedFilesCounter;
+    private final Counter scannedFilesCounter;
 
-    /**
-     * Upload d'un fichier, stockage dans MinIO, 'PENDING status' en metadata.
-     * scan asynchrone par le scheduler.
-     */
     @Transactional
     public FileMetadataDto upload(MultipartFile file, String uploadedBy) throws IOException {
-        if (file.isEmpty()) {
-            throw new IllegalArgumentException("Cannot upload empty file");
-        }
-
+        if (file.isEmpty()) throw new IllegalArgumentException("Cannot upload empty file");
         String storedKey = storageService.store(file);
-
         FileMetadata metadata = FileMetadata.builder()
                 .originalFileName(file.getOriginalFilename())
                 .storedFileName(storedKey)
@@ -45,70 +40,47 @@ public class FileService {
                 .uploadedBy(uploadedBy)
                 .scanStatus(FileMetadata.ScanStatus.PENDING)
                 .build();
-
         FileMetadata saved = repository.save(metadata);
         log.info("File uploaded: {} (id={})", file.getOriginalFilename(), saved.getId());
         return FileMetadataDto.from(saved);
     }
 
-    /**
-     * retourne tous les fichiers par date
-     */
     public List<FileMetadataDto> listAll() {
-        return repository.findByOrderByUploadedAtDesc()
-                .stream()
-                .map(FileMetadataDto::from)
-                .toList();
+        return repository.findByOrderByUploadedAtDesc().stream().map(FileMetadataDto::from).toList();
     }
 
-    /**
-     * retourne tous les fichiers par ID
-     */
     public FileMetadataDto getById(UUID id) {
         return repository.findById(id)
                 .map(FileMetadataDto::from)
                 .orElseThrow(() -> new IllegalArgumentException("File not found: " + id));
     }
 
-    /**
-     * téléchargement d'un fichier ssi CLEAN
-     */
     public DownloadResult download(UUID id) {
         FileMetadata metadata = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("File not found: " + id));
-
         if (metadata.getScanStatus() != FileMetadata.ScanStatus.CLEAN) {
-            throw new IllegalStateException(
-                "File cannot be downloaded. Current status: " + metadata.getScanStatus()
-            );
+            throw new IllegalStateException("File cannot be downloaded. Status: " + metadata.getScanStatus());
         }
-
         InputStream stream = storageService.download(metadata.getStoredFileName());
         return new DownloadResult(stream, metadata.getOriginalFileName(), metadata.getContentType(), metadata.getFileSize());
     }
 
-    /**
-     * Scan les fichiers 'PENDING' toutes les 10 secondes
-     */
     @Scheduled(fixedRateString = "${scan.scheduler.fixed-rate-ms:10000}")
     @Transactional
     public void processPendingScans() {
         List<FileMetadata> pending = repository.findByScanStatus(FileMetadata.ScanStatus.PENDING);
-
-        if (pending.isEmpty()) {
-            return;
-        }
-
+        if (pending.isEmpty()) return;
         log.info("Scan scheduler: {} file(s) to scan", pending.size());
 
         for (FileMetadata file : pending) {
             try {
-                // statut 'PENDING' pour éviter au fichier d'être scanné en double sur une autre instance
                 file.setScanStatus(FileMetadata.ScanStatus.SCANNING);
                 repository.save(file);
 
                 byte[] bytes = storageService.downloadBytes(file.getStoredFileName());
                 AntivirusService.ScanResult result = antivirusService.scan(file.getOriginalFileName(), bytes);
+
+                scannedFilesCounter.increment();
 
                 if (result.clean()) {
                     file.setScanStatus(FileMetadata.ScanStatus.CLEAN);
@@ -116,18 +88,17 @@ public class FileService {
                 } else {
                     file.setScanStatus(FileMetadata.ScanStatus.INFECTED);
                     file.setScanResult(result.detail());
-                    // Delete infected file from storage
+                    infectedFilesCounter.increment(); // ← déclenche l'alerte Grafana
                     storageService.delete(file.getStoredFileName());
-                    log.warn("INFECTED file detected and deleted: {} (id={})", file.getOriginalFileName(), file.getId());
+                    log.warn("INFECTED file deleted: {} (id={})", file.getOriginalFileName(), file.getId());
                 }
 
                 file.setScannedAt(Instant.now());
                 repository.save(file);
-                log.info("Scan complete for {} → {}", file.getOriginalFileName(), file.getScanStatus());
+                log.info("Scan complete: {} → {}", file.getOriginalFileName(), file.getScanStatus());
 
             } catch (Exception e) {
-                log.error("Scan failed for file id={}: {}", file.getId(), e.getMessage());
-                // Revert to PENDING so it will be retried
+                log.error("Scan failed for id={}: {}", file.getId(), e.getMessage());
                 file.setScanStatus(FileMetadata.ScanStatus.PENDING);
                 repository.save(file);
             }
