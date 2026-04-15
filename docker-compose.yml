@@ -168,24 +168,14 @@ services:
       - scanner-service
 
   # Grafana — http://localhost:3001  (admin / admin)
-  # SMTP configuré pour les alertes mail
+  
   grafana:
     image: grafana/grafana:latest
     container_name: praxedo-grafana
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
-      GF_USERS_ALLOW_SIGN_UP: "false"
-      # ── SMTP pour les alertes mail ──────────────
-      # Remplace par ton SMTP réel pour la prod
-      # Ici on utilise Gmail (nécessite un mot de passe d'application)
-      GF_SMTP_ENABLED: "true"
-      GF_SMTP_HOST: "smtp.gmail.com:587"
-      GF_SMTP_USER: "enzokubiak95@gmail.com"
-      GF_SMTP_PASSWORD: "${GMAIL_APP_PASSWORD}"   # défini dans .env
-      GF_SMTP_FROM_ADDRESS: "enzokubiak95@gmail.com"
-      GF_SMTP_FROM_NAME: "Praxedo Monitoring"
-      GF_SMTP_STARTTLS_POLICY: "MandatoryStartTLS"
+      #GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro

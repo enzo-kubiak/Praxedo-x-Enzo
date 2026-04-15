@@ -41,7 +41,7 @@ scan:
   scheduler:
     fixed-rate-ms: 10000
 
-# ── Actuator + Prometheus metrics ──────────────
+# Actuator et métriques Prometheus
 management:
   endpoints:
     web:
